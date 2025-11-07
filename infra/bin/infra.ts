@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib/core'
 
+import { ClusterStack } from '../lib/cluster-stack'
 import { EcrStack } from '../lib/ecr-stack'
-import { IsCoolGptServiceStack } from '../lib/isCoolGptService-stack'
+import { GithubOidcRoleStack } from '../lib/github-oidc-role-stack'
 import { VpcStack } from '../lib/vpc-stack'
 
 const app = new cdk.App()
@@ -17,7 +18,7 @@ const env: cdk.Environment = {
   region: 'us-east-1',
 }
 
-const ecr = new EcrStack(app, 'Ecr', {
+const ecrStack = new EcrStack(app, 'Ecr', {
   env,
   tags: tagsInfra,
 })
@@ -27,9 +28,23 @@ const vpcStack = new VpcStack(app, 'Vpc', {
   tags: tagsInfra,
 })
 
-new IsCoolGptServiceStack(app, 'IsCoolGptService', {
-  tags: tagsInfra,
+const clusterStack = new ClusterStack(app, 'Cluster', {
   env,
-  repository: ecr.isCoolGptRepository,
+  tags: tagsInfra,
   vpc: vpcStack.vpc,
 })
+clusterStack.addDependency(vpcStack)
+
+new GithubOidcRoleStack(app, 'GithubOidcRole', {
+  env,
+  tags: tagsInfra,
+})
+
+void ecrStack
+// new IsCoolGptServiceStack(app, 'IsCoolGptService', {
+//   tags: tagsInfra,
+//   env,
+//   repository: ecrStack.isCoolGptRepository,
+//   vpc: vpcStack.vpc,
+//   cluster: clusterStack.cluster,
+// })
