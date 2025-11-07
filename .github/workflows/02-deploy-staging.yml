@@ -15,17 +15,20 @@ env:
   ECS_SERVICE: IsCoolGptService
 
 jobs:
-  build_push_deploy:
-    name: Build, Push image, Deploy to ECS (staging)
+  build:
+    name: Build and push image to ECR
     runs-on: ubuntu-latest
     environment: staging
     permissions:
       contents: read
+    outputs:
+      image: ${{ steps.meta.outputs.IMAGE }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (staging keys)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -55,36 +58,33 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: nder task definition (staging)
+  deploy:
+    name: Deploy to Amazon ECS
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+    environment: staging
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (staging keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Render ECS task definition
         id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.TASK_DEFINITION_PATH }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.meta.outputs.IMAGE }}
+          image: ${{ needs.build.outputs.image }}
 
-      # Show rendered task-def (prove image replacement happened)
-      - name: Show rendered task definition
-        run: |
-          echo "TASKDEF_FILE=${{ steps.render.outputs.task-definition }}"
-          cat "${{ steps.render.outputs.task-definition }}"
-          echo "Containers:"
-          jq -r '.containerDefinitions[] | .name + " -> " + .image' "${{ steps.render.outputs.task-definition }}"
-
-      # Fail fast if the image wasn't replaced (prevents no-op deploys)
-      - name: Assert image updated
-        run: |
-          NEW_IMG=$(jq -r '.containerDefinitions[] | select(.name=="'"${CONTAINER_NAME}"'") | .image' "${{ steps.render.outputs.task-definition }}")
-          test -n "$NEW_IMG" || (echo "Image not found for container ${CONTAINER_NAME}"; exit 1)
-          echo "New image: $NEW_IMG"
-
-      # Optional: show ECS targets exist
-      - name: Describe ECS resources
-        run: |
-          aws ecs describe-clusters --clusters "${ECS_CLUSTER}"
-          aws ecs describe-services --cluster "${ECS_CLUSTER}" --services "${ECS_SERVICE}"
-
-      # Deploy (force a new deployment so ECS doesn't no-op)
       - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
@@ -92,5 +92,3 @@ jobs:
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-          force-new-deployment: true
-
