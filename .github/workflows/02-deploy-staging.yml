@@ -29,6 +29,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Who am I (after OIDC)
+        run: aws sts get-caller-identity || true
+
+      - name: Debug OIDC claims
+        run: |
+          URL="$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com"
+          TOKEN="$(curl -sH "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$URL" | jq -r .value)"
+          IFS='.' read -r _ PAYLOAD _ <<< "$TOKEN"
+          echo "$PAYLOAD" | base64 -d | jq
+
+
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
