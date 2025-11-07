@@ -1,0 +1,38 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    { 
+      "Sid": "DescribeBits", 
+      "Effect": "Allow", 
+      "Action": [
+        "ecs:DescribeClusters", "ecs:DescribeServices", "ecs:DescribeTaskDefinition"
+      ], 
+      "Resource": "*" 
+    },
+    { 
+      "Sid": "RegisterTaskDef", 
+      "Effect": "Allow", 
+      "Action": "ecs:RegisterTaskDefinition", 
+      "Resource": "*" 
+    },
+    { 
+      "Sid": "UpdateStagingService", 
+      "Effect": "Allow", 
+      "Action": "ecs:UpdateService",
+      "Resource": "arn:aws:ecs:us-east-1:654654382044:service/IsCoolGpt/IsCoolGptService" },
+    { 
+      "Sid": "PassOnlyNeededRoles", 
+      "Effect": "Allow", 
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::654654382044:role/ecsTaskExecutionRole",
+        "arn:aws:iam::654654382044:role/IsCoolGptService-TaskDefinitionTaskRoleFD40A61D-8r1oBBOA1rK8"
+      ],
+      "Condition": { 
+        "StringEquals": { 
+          "iam:PassedToService": "ecs-tasks.amazonaws.com" 
+        } 
+      } 
+    }
+  ]
+}

@@ -7,13 +7,14 @@ import { Construct } from 'constructs'
 
 interface IsCoolGptServiceStackProps extends cdk.StackProps {
   vpc: ec2.Vpc
-  cluster: ecs.Cluster
   repository: ecr.Repository
 }
 
 export class IsCoolGptServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: IsCoolGptServiceStackProps) {
     super(scope, id, props)
+
+    const containerPort = 3000
 
     const cluster = new ecs.Cluster(this, 'IsCoolGptCluster', {
       vpc: props.vpc,
@@ -49,7 +50,7 @@ export class IsCoolGptServiceStack extends cdk.Stack {
       logging: logDriver,
       portMappings: [
         {
-          containerPort: 3000,
+          containerPort,
           protocol: ecs.Protocol.TCP,
         },
       ],
@@ -65,8 +66,8 @@ export class IsCoolGptServiceStack extends cdk.Stack {
     props.repository.grantPull(taskDefinition.taskRole)
 
     service.connections.securityGroups[0].addIngressRule(
-      ec2.Peer.ipv4(props.vpc.vpcCidrBlock),
-      ec2.Port.tcp(3000),
+      ec2.Peer.ipv4('0.0.0.0/0'),
+      ec2.Port.tcp(containerPort),
       'Public ingress',
     )
   }

@@ -1,0 +1,36 @@
+{
+  "family": "is-cool-gpt-service",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-TaskDefinitionExecutionRole8D61C2F-sURbjIW9ebc3",
+  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-TaskDefinitionTaskRoleFD40A61D-8r1oBBOA1rK8",
+  "containerDefinitions": [
+    {
+      "name": "isCoolGptService",
+      "image": "REPLACED_BY_WORKFLOW",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "IsCoolGptService",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "IsCoolGptService"
+        }
+      },
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "staging"
+        }
+      ]
+    }
+  ]
+}
