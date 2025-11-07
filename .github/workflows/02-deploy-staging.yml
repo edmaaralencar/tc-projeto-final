@@ -11,8 +11,8 @@ env:
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}     
   CONTAINER_NAME: isCoolGptService   
   TASK_DEFINITION_PATH: infra/taskdef.staging.json
-  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_STAGING || 'IsCoolGpt' }}
-  ECS_SERVICE: ${{ vars.ECS_SERVICE_STAGING || 'IsCoolGptService' }}
+  ECS_CLUSTER: IsCoolGpt
+  ECS_SERVICE: IsCoolGptService
 
 jobs:
   build_push_deploy:
