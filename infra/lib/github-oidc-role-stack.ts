@@ -30,23 +30,34 @@ export class GithubOidcRoleStack extends cdk.Stack {
       maxSessionDuration: cdk.Duration.hours(1),
     })
 
+    // 1) Necessário para login no ECR (resource "*")
     role.addToPolicy(
       new iam.PolicyStatement({
+        sid: 'EcrAuthAndDescribe',
         actions: [
-          // ECR: login/push
           'ecr:GetAuthorizationToken',
+          'ecr:DescribeRepositories', // pode ficar "*" também
+        ],
+        resources: ['*'],
+      }),
+    )
+
+    // 2) Push de imagem escopado ao seu repo
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        sid: 'EcrPushRepoScoped',
+        actions: [
           'ecr:BatchCheckLayerAvailability',
+          'ecr:BatchGetImage',
           'ecr:CompleteLayerUpload',
-          'ecr:UploadLayerPart',
+          'ecr:GetDownloadUrlForLayer',
           'ecr:InitiateLayerUpload',
           'ecr:PutImage',
-          'ecr:DescribeRepositories',
-          'ecr:BatchGetImage',
-          'ecr:GetDownloadUrlForLayer',
+          'ecr:UploadLayerPart',
         ],
         resources: [
           'arn:aws:ecr:us-east-1:654654382044:repository/is-cool-gpt-service',
-        ], // limit to specific repo ARN if you like
+        ],
       }),
     )
 
