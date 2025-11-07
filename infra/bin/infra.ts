@@ -2,6 +2,8 @@
 import * as cdk from 'aws-cdk-lib/core'
 
 import { EcrStack } from '../lib/ecr-stack'
+import { IsCoolGptServiceStack } from '../lib/isCoolGptService-stack'
+import { VpcStack } from '../lib/vpc-stack'
 
 const app = new cdk.App()
 
@@ -15,7 +17,19 @@ const env: cdk.Environment = {
   region: 'us-east-1',
 }
 
-new EcrStack(app, 'Ecr', {
+const ecr = new EcrStack(app, 'Ecr', {
   env,
   tags: tagsInfra,
+})
+
+const vpcStack = new VpcStack(app, 'Vpc', {
+  env,
+  tags: tagsInfra,
+})
+
+new IsCoolGptServiceStack(app, 'IsCoolGptService', {
+  tags: tagsInfra,
+  env,
+  repository: ecr.isCoolGptRepository,
+  vpc: vpcStack.vpc,
 })

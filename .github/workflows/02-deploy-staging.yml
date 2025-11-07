@@ -8,7 +8,11 @@ on:
 env:
   AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}        
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}     
+  CONTAINER_NAME: isCoolGptService   
+  TASK_DEFINITION_PATH: infra/taskdef.staging.json
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_STAGING || 'IsCoolGpt' }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE_STAGING || 'IsCoolGptService' }}
 
 jobs:
   build_push_deploy:
@@ -50,3 +54,21 @@ jobs:
           tags: ${{ steps.meta.outputs.IMAGE }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./infra/taskdef.staging.json
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.meta.outputs.IMAGE } }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          service: ${{ env.SERVICE_NAME }}
+          cluster: ${{ env.CLUSTER_NAME }}
+          wait-for-service-stability: true
