@@ -1,0 +1,28 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EcrAuth",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Sid": "EcrPushPullSpecificRepo",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload",
+        "ecr:BatchGetImage",
+        "ecr:DescribeImages",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:ListImages",
+        "ecr:DescribeRepositories"
+      ],
+      "Resource": "arn:aws:ecr:us-east-1:654654382044:repository/is-cool-gpt-service"
+    }
+  ]
+}
