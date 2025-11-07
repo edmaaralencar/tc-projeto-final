@@ -55,13 +55,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Fill in the new image ID in the Amazon ECS task definition
-        id: task-def
-        env:
-          IMAGE: ${{ needs.build.outputs.image }}
+      - name: nder task definition (staging)
+        id: render
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ./infra/taskdef.staging.json
+          task-definition: ${{ env.TASK_DEFINITION_PATH }}
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.meta.outputs.IMAGE }}
 
