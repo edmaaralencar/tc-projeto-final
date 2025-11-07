@@ -30,19 +30,14 @@ export class GithubOidcRoleStack extends cdk.Stack {
       maxSessionDuration: cdk.Duration.hours(1),
     })
 
-    // 1) Necessário para login no ECR (resource "*")
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'EcrAuthAndDescribe',
-        actions: [
-          'ecr:GetAuthorizationToken',
-          'ecr:DescribeRepositories', // pode ficar "*" também
-        ],
+        actions: ['ecr:GetAuthorizationToken', 'ecr:DescribeRepositories'],
         resources: ['*'],
       }),
     )
 
-    // 2) Push de imagem escopado ao seu repo
     role.addToPolicy(
       new iam.PolicyStatement({
         sid: 'EcrPushRepoScoped',
@@ -61,20 +56,19 @@ export class GithubOidcRoleStack extends cdk.Stack {
       }),
     )
 
-    // role.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: [
-    //       // ECS service update & task definition registration
-    //       'ecs:DescribeClusters',
-    //       'ecs:DescribeServices',
-    //       'ecs:UpdateService',
-    //       'ecs:RegisterTaskDefinition',
-    //       'ecs:DescribeTaskDefinition',
-    //       'ecs:ListTaskDefinitions',
-    //       'iam:PassRole', // for task/execution roles referenced by task defs
-    //     ],
-    //     resources: ['*'], // consider scoping to your cluster/service/roles
-    //   }),
-    // )
+    role.addToPolicy(
+      new iam.PolicyStatement({
+        actions: [
+          'ecs:DescribeClusters',
+          'ecs:DescribeServices',
+          'ecs:UpdateService',
+          'ecs:RegisterTaskDefinition',
+          'ecs:DescribeTaskDefinition',
+          'ecs:ListTaskDefinitions',
+          'iam:PassRole',
+        ],
+        resources: ['*'],
+      }),
+    )
   }
 }

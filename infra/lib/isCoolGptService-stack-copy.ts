@@ -43,7 +43,7 @@ export class IsCoolGptServiceStack extends cdk.Stack {
       containerName: `isCoolGptService-${envSuffix}`,
       image: ecs.ContainerImage.fromEcrRepository(
         props.repository,
-        'efa691a5d0a6',
+        '8c6748750ff2',
       ),
       logging: logDriver,
       portMappings: [

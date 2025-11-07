@@ -15,7 +15,7 @@ export async function healthCheck(app: FastifyInstance) {
       },
     },
     async () => {
-      return 'UP 1234'
+      return 'UP 123456'
     },
   )
 }

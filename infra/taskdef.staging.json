@@ -1,14 +1,14 @@
 {
-  "family": "is-cool-gpt-service",
+  "family": "is-cool-gpt-service-staging",
   "networkMode": "awsvpc",
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-TaskDefinitionExecutionRole8D61C2F-sURbjIW9ebc3",
-  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-TaskDefinitionTaskRoleFD40A61D-8r1oBBOA1rK8",
+  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-Ow1aKjGKZS20",
+  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-3CT1Rfhrrsqy",
   "containerDefinitions": [
     {
-      "name": "isCoolGptService",
+      "name": "isCoolGptService-staging",
       "image": "REPLACED_BY_WORKFLOW",
       "portMappings": [
         {
@@ -20,9 +20,9 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "IsCoolGptService",
+          "awslogs-group": "/ecs/IsCoolGptService-staging",
           "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "IsCoolGptService"
+          "awslogs-stream-prefix": "IsCoolGptService-staging"
         }
       },
       "environment": [

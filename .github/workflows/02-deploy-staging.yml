@@ -9,10 +9,10 @@ env:
   AWS_REGION: ${{ vars.AWS_REGION }}
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
   ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}     
-  CONTAINER_NAME: isCoolGptService   
+  CONTAINER_NAME: isCoolGptService-staging   
   TASK_DEFINITION_PATH: infra/taskdef.staging.json
   ECS_CLUSTER: IsCoolGpt
-  ECS_SERVICE: IsCoolGptService
+  ECS_SERVICE: IsCoolGptService-staging
 
 jobs:
   build:
@@ -27,17 +27,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Who am I (after OIDC)
-        run: aws sts get-caller-identity || true
-
-      - name: Debug OIDC claims
-        run: |
-          URL="$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com"
-          TOKEN="$(curl -sH "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$URL" | jq -r .value)"
-          IFS='.' read -r _ PAYLOAD _ <<< "$TOKEN"
-          echo "$PAYLOAD" | base64 -d | jq
-
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -69,36 +58,37 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # deploy:
-    # name: Deploy to Amazon ECS
-    # runs-on: ubuntu-latest
-    # needs: build
-    # permissions:
-    #   contents: read
+  deploy:
+    name: Deploy to Amazon ECS
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
 
-    # steps:
-    #   - name: Checkout
-    #     uses: actions/checkout@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    #   - name: Configure AWS credentials (staging keys)
-    #     uses: aws-actions/configure-aws-credentials@v4
-    #     with:
-    #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #       aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-ecs-deploy
+          role-session-name: github-actions
       
-    #   - name: Render ECS task definition
-    #     id: render
-    #     uses: aws-actions/amazon-ecs-render-task-definition@v1
-    #     with:
-    #       task-definition: ${{ env.TASK_DEFINITION_PATH }}
-    #       container-name: ${{ env.CONTAINER_NAME }}
-    #       image: ${{ needs.build.outputs.image }}
+      - name: Render ECS task definition
+        id: render
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.TASK_DEFINITION_PATH }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.build.outputs.image }}
 
-    #   - name: Deploy to ECS
-    #     uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-    #     with:
-    #       task-definition: ${{ steps.render.outputs.task-definition }}
-    #       service: ${{ env.ECS_SERVICE }}
-    #       cluster: ${{ env.ECS_CLUSTER }}
-    #       wait-for-service-stability: true
+      - name: Deploy to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
