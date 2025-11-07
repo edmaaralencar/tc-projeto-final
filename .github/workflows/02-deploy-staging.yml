@@ -63,10 +63,34 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.meta.outputs.IMAGE }}
 
-      - name: Deploy Amazon ECS task definition
+      # Show rendered task-def (prove image replacement happened)
+      - name: Show rendered task definition
+        run: |
+          echo "TASKDEF_FILE=${{ steps.render.outputs.task-definition }}"
+          cat "${{ steps.render.outputs.task-definition }}"
+          echo "Containers:"
+          jq -r '.containerDefinitions[] | .name + " -> " + .image' "${{ steps.render.outputs.task-definition }}"
+
+      # Fail fast if the image wasn't replaced (prevents no-op deploys)
+      - name: Assert image updated
+        run: |
+          NEW_IMG=$(jq -r '.containerDefinitions[] | select(.name=="'"${CONTAINER_NAME}"'") | .image' "${{ steps.render.outputs.task-definition }}")
+          test -n "$NEW_IMG" || (echo "Image not found for container ${CONTAINER_NAME}"; exit 1)
+          echo "New image: $NEW_IMG"
+
+      # Optional: show ECS targets exist
+      - name: Describe ECS resources
+        run: |
+          aws ecs describe-clusters --clusters "${ECS_CLUSTER}"
+          aws ecs describe-services --cluster "${ECS_CLUSTER}" --services "${ECS_SERVICE}"
+
+      # Deploy (force a new deployment so ECS doesn't no-op)
+      - name: Deploy to ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render.outputs.task-definition }}
-          service: ${{ env.SERVICE_NAME }}
-          cluster: ${{ env.CLUSTER_NAME }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
+          force-new-deployment: true
+
