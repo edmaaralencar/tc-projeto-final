@@ -4,8 +4,8 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-Ow1aKjGKZS20",
-  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-3CT1Rfhrrsqy",
+  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-U3q3j0prOM9a",
+  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-FVGSMhwuLeOz",
   "containerDefinitions": [
     {
       "name": "isCoolGptService-staging",
