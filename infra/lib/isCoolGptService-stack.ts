@@ -9,6 +9,7 @@ interface IsCoolGptServiceStackProps extends cdk.StackProps {
   vpc: ec2.Vpc
   repository: ecr.Repository
   cluster: ecs.Cluster
+  envName: 'staging' | 'production'
 }
 
 export class IsCoolGptServiceStack extends cdk.Stack {
@@ -16,31 +17,33 @@ export class IsCoolGptServiceStack extends cdk.Stack {
     super(scope, id, props)
 
     const containerPort = 3000
+    const envSuffix = props.envName.toLowerCase()
+    const baseName = `IsCoolGptService-${envSuffix}`
 
     const logDriver = ecs.LogDriver.awsLogs({
-      logGroup: new logs.LogGroup(this, 'LogGroup', {
-        logGroupName: 'IsCoolGptService',
+      logGroup: new logs.LogGroup(this, `${baseName}-LogGroup`, {
+        logGroupName: `/ecs/${baseName}`,
         removalPolicy: cdk.RemovalPolicy.DESTROY,
         retention: logs.RetentionDays.ONE_MONTH,
       }),
-      streamPrefix: 'IsCoolGptService',
+      streamPrefix: baseName,
     })
 
     const taskDefinition = new ecs.FargateTaskDefinition(
       this,
-      'TaskDefinition',
+      `${baseName}-TaskDefinition`,
       {
         cpu: 256,
         memoryLimitMiB: 512,
-        family: 'is-cool-gpt-service',
+        family: `is-cool-gpt-service-${envSuffix}`,
       },
     )
 
     taskDefinition.addContainer('App', {
-      containerName: 'isCoolGptService',
+      containerName: `isCoolGptService-${envSuffix}`,
       image: ecs.ContainerImage.fromEcrRepository(
         props.repository,
-        'efa691a5d0a6',
+        '8c6748750ff2',
       ),
       logging: logDriver,
       portMappings: [
@@ -51,19 +54,23 @@ export class IsCoolGptServiceStack extends cdk.Stack {
       ],
     })
 
-    const service = new ecs.FargateService(this, 'IsCoolGptService', {
-      serviceName: 'IsCoolGptService',
-      cluster: props.cluster,
-      taskDefinition,
-      desiredCount: 1,
-      assignPublicIp: true,
-    })
+    const service = new ecs.FargateService(
+      this,
+      `${baseName}-IsCoolGptService`,
+      {
+        serviceName: baseName,
+        cluster: props.cluster,
+        taskDefinition,
+        desiredCount: 1,
+        assignPublicIp: true,
+      },
+    )
     props.repository.grantPull(taskDefinition.taskRole)
 
     service.connections.securityGroups[0].addIngressRule(
       ec2.Peer.ipv4('0.0.0.0/0'),
       ec2.Port.tcp(containerPort),
-      'Public ingress',
+      `Public ingress ${envSuffix}`,
     )
   }
 }

@@ -4,7 +4,7 @@ import * as cdk from 'aws-cdk-lib/core'
 import { ClusterStack } from '../lib/cluster-stack'
 import { EcrStack } from '../lib/ecr-stack'
 import { GithubOidcRoleStack } from '../lib/github-oidc-role-stack'
-import { IsCoolGptServiceStack } from '../lib/isCoolGptService-stack-copy'
+import { IsCoolGptServiceStack } from '../lib/isCoolGptService-stack'
 import { VpcStack } from '../lib/vpc-stack'
 
 const app = new cdk.App()
@@ -56,3 +56,19 @@ const isCoolGptServiceStagingStack = new IsCoolGptServiceStack(
 isCoolGptServiceStagingStack.addDependency(vpcStack)
 isCoolGptServiceStagingStack.addDependency(clusterStack)
 isCoolGptServiceStagingStack.addDependency(ecrStack)
+
+const isCoolGptServiceProductionStack = new IsCoolGptServiceStack(
+  app,
+  'IsCoolGptService-Production',
+  {
+    env,
+    tags: tagsInfra,
+    vpc: vpcStack.vpc,
+    cluster: clusterStack.cluster,
+    repository: ecrStack.isCoolGptRepository,
+    envName: 'production',
+  },
+)
+isCoolGptServiceProductionStack.addDependency(vpcStack)
+isCoolGptServiceProductionStack.addDependency(clusterStack)
+isCoolGptServiceProductionStack.addDependency(ecrStack)
