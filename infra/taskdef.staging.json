@@ -30,6 +30,12 @@
           "name": "NODE_ENV",
           "value": "staging"
         }
+      ],
+      "secrets": [
+        {
+          "name": "OPEN_AI_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:654654382044:parameter/is-cool-gpt/staging/OPEN_AI_API_KEY"
+        }
       ]
     }
   ]

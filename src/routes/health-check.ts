@@ -2,6 +2,8 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
+import { env } from '../env'
+
 export async function healthCheck(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
     '/healthcheck',
@@ -15,7 +17,7 @@ export async function healthCheck(app: FastifyInstance) {
       },
     },
     async () => {
-      return 'UP 123456'
+      return 'UP 123456' + ' ' + env.OPEN_AI_API_KEY
     },
   )
 }
