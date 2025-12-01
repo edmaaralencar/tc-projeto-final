@@ -4,8 +4,8 @@
   "requiresCompatibilities": ["FARGATE"],
   "cpu": "256",
   "memory": "512",
-  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-U3q3j0prOM9a",
-  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-FVGSMhwuLeOz",
+  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-jxid391EnWBs",
+  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-HFE1TivEpH4z",
   "containerDefinitions": [
     {
       "name": "isCoolGptService-staging",
@@ -33,8 +33,8 @@
       ],
       "secrets": [
         {
-          "name": "OPEN_AI_API_KEY",
-          "valueFrom": "arn:aws:ssm:us-east-1:654654382044:parameter/is-cool-gpt/staging/OPEN_AI_API_KEY"
+          "name": "GROQ_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:654654382044:parameter/is-cool-gpt/staging/GROQ_API_KEY"
         }
       ]
     }

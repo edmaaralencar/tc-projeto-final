@@ -31,7 +31,7 @@ export class IsCoolGptServiceStack extends cdk.Stack {
       streamPrefix: baseName,
     })
 
-    const { openAiApiKeyParam } = this.getParameters(props.envName)
+    const { groqApiKeyParam } = this.getParameters(props.envName)
 
     const taskDefinition = new ecs.FargateTaskDefinition(
       this,
@@ -47,7 +47,7 @@ export class IsCoolGptServiceStack extends cdk.Stack {
       containerName: `isCoolGptService-${envSuffix}`,
       image: ecs.ContainerImage.fromEcrRepository(
         props.repository,
-        '8c6748750ff2',
+        '0f8919fdd875',
       ),
       logging: logDriver,
       portMappings: [
@@ -57,20 +57,20 @@ export class IsCoolGptServiceStack extends cdk.Stack {
         },
       ],
       secrets: {
-        OPEN_AI_API_KEY: ecs.Secret.fromSsmParameter(openAiApiKeyParam),
+        GROQ_API_KEY: ecs.Secret.fromSsmParameter(groqApiKeyParam),
       },
     })
 
     taskDefinition.addToExecutionRolePolicy(
       new iam.PolicyStatement({
         actions: ['ssm:GetParameter'],
-        resources: [openAiApiKeyParam.parameterArn],
+        resources: [groqApiKeyParam.parameterArn],
       }),
     )
     taskDefinition.addToExecutionRolePolicy(
       new iam.PolicyStatement({
         actions: ['kms:Decrypt'],
-        resources: ['*'], // or your CMK ARN
+        resources: ['*'],
         conditions: {
           StringEquals: {
             'kms:ViaService': `ssm.${this.region}.amazonaws.com`,
@@ -100,17 +100,17 @@ export class IsCoolGptServiceStack extends cdk.Stack {
   }
 
   getParameters(envName: 'staging' | 'production') {
-    const openAiApiKeyParam =
+    const groqApiKeyParam =
       ssm.StringParameter.fromSecureStringParameterAttributes(
         this,
-        `OpenAiApiKeyRef-${envName}`,
+        `GroqApiKeyRef-${envName}`,
         {
-          parameterName: `/is-cool-gpt/${envName}/OPEN_AI_API_KEY`,
+          parameterName: `/is-cool-gpt/${envName}/GROQ_API_KEY`,
         },
       )
 
     return {
-      openAiApiKeyParam,
+      groqApiKeyParam,
     }
   }
 }
