@@ -1,3 +1,5 @@
+import 'dotenv/config'
+
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import fastify from 'fastify'
@@ -8,6 +10,7 @@ import {
   ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 
+import { chat } from './routes/chat'
 import { healthCheck } from './routes/health-check'
 
 const app = fastify().withTypeProvider<ZodTypeProvider>()
@@ -40,6 +43,7 @@ app.register(fastifySwaggerUi, {
 })
 
 app.register(healthCheck)
+app.register(chat)
 
 app.listen({ port: 3000, host: '0.0.0.0' }).then(() => {
   app.log.info('Server running on port 3000!')

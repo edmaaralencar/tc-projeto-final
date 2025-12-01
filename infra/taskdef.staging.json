@@ -1,0 +1,42 @@
+{
+  "family": "is-cool-gpt-service-staging",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-jxid391EnWBs",
+  "taskRoleArn": "arn:aws:iam::654654382044:role/IsCoolGptService-Staging-IsCoolGptServicestagingTas-HFE1TivEpH4z",
+  "containerDefinitions": [
+    {
+      "name": "isCoolGptService-staging",
+      "image": "REPLACED_BY_WORKFLOW",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/IsCoolGptService-staging",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "IsCoolGptService-staging"
+        }
+      },
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "staging"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "GROQ_API_KEY",
+          "valueFrom": "arn:aws:ssm:us-east-1:654654382044:parameter/is-cool-gpt/staging/GROQ_API_KEY"
+        }
+      ]
+    }
+  ]
+}
