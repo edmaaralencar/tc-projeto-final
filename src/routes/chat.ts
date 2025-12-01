@@ -10,7 +10,7 @@ export async function chat(app: FastifyInstance) {
     {
       schema: {
         tags: ['Chat'],
-        summary: 'Health check',
+        summary: '',
         body: z.object({
           content: z.string(),
         }),

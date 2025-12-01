@@ -18,6 +18,7 @@ export class GithubOidcRoleStack extends cdk.Stack {
       StringLike: {
         'token.actions.githubusercontent.com:sub': [
           'repo:edmaaralencar/tc-projeto-final:ref:refs/heads/staging',
+          'repo:edmaaralencar/tc-projeto-final:ref:refs/heads/main',
           // 'repo:YOUR_ORG/YOUR_REPO:ref:refs/tags/*'
         ],
       },
